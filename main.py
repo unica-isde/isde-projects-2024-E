@@ -55,3 +55,10 @@ async def request_classification(request: Request):
             "classification_scores": json.dumps(classification_scores),
         },
     )
+
+@app.get("/image-transformation")
+def create_transform(request: Request):
+    return templates.TemplateResponse(
+        "image_transformation_select.html",
+        {"request": request, "images": list_images()},
+    )
