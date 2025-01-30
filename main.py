@@ -62,3 +62,16 @@ def create_transform(request: Request):
         "image_transformation_select.html",
         {"request": request, "images": list_images()},
     )
+
+@app.post("/image-transformation")
+async def request_transformation(request: Request):
+    form = ClassificationForm(request)
+    await form.load_data()
+    image_id = form.image_id
+    return templates.TemplateResponse(
+        "image_transformation_output.html",
+        {
+            "request": request,
+            "image_id": image_id,
+        },
+    )
