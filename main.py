@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
+from app.forms.transformation_form import TransformationForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
 
@@ -65,9 +66,18 @@ def create_transform(request: Request):
 
 @app.post("/image-transformation")
 async def request_transformation(request: Request):
-    form = ClassificationForm(request)
+    form = TransformationForm(request)
     await form.load_data()
     image_id = form.image_id
+    color = form.color
+    brightness = form.brightness
+    contrast = form.contrast
+    sharpness = form.sharpness
+    print(f"Image ID: {image_id}")
+    print(f"Color: {color}")
+    print(f"Brightness: {brightness}")
+    print(f"Contrast: {contrast}")
+    print(f"Sharpness: {sharpness}")
     return templates.TemplateResponse(
         "image_transformation_output.html",
         {
