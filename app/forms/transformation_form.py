@@ -14,10 +14,19 @@ class TransformationForm:
     async def load_data(self):
         form = await self.request.form()
         self.image_id = form.get("image_id")
-        self.color = form.get("color")
-        self.brightness = form.get("brightness")
-        self.contrast = form.get("contrast")
-        self.sharpness = form.get("sharpness")
+
+        if form.get("color") != "":
+            self.color = float(form.get("color"))
+
+        if form.get("brightness") != "":
+            self.brightness = float(form.get("brightness"))
+
+        if form.get("contrast") != "":
+            self.contrast = float(form.get("contrast"))
+
+        if form.get("sharpness") != "":
+            self.sharpness = float(form.get("sharpness"))
+        
 
     def is_valid(self):
         if not self.image_id or not isinstance(self.image_id, str):

@@ -8,6 +8,7 @@ from app.forms.classification_form import ClassificationForm
 from app.forms.transformation_form import TransformationForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
+from app.ml.transformation_utils import transform_image
 
 
 app = FastAPI()
@@ -73,11 +74,28 @@ async def request_transformation(request: Request):
     brightness = form.brightness
     contrast = form.contrast
     sharpness = form.sharpness
-    print(f"Image ID: {image_id}")
-    print(f"Color: {color}")
-    print(f"Brightness: {brightness}")
-    print(f"Contrast: {contrast}")
-    print(f"Sharpness: {sharpness}")
+
+    #show types of the transformation values
+    print(type(color))
+    print(type(brightness))
+    print(type(contrast))
+    print(type(sharpness))
+
+    # print the transformation values
+    print(color)
+    print(brightness)
+    print(contrast)
+    print(sharpness)
+    
+    transformed_image = transform_image(
+        image_id=image_id,
+        color=color,
+        brightness=brightness,
+        contrast=contrast,
+        sharpness=sharpness,
+    )
+    #show the transformed image (for debugging)
+    transformed_image.show()
     return templates.TemplateResponse(
         "image_transformation_output.html",
         {
