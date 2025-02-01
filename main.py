@@ -1,4 +1,6 @@
 import json
+from io import BytesIO
+import base64
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -74,18 +76,6 @@ async def request_transformation(request: Request):
     brightness = form.brightness
     contrast = form.contrast
     sharpness = form.sharpness
-
-    #show types of the transformation values
-    print(type(color))
-    print(type(brightness))
-    print(type(contrast))
-    print(type(sharpness))
-
-    # print the transformation values
-    print(color)
-    print(brightness)
-    print(contrast)
-    print(sharpness)
     
     transformed_image = transform_image(
         image_id=image_id,
@@ -94,12 +84,19 @@ async def request_transformation(request: Request):
         contrast=contrast,
         sharpness=sharpness,
     )
-    #show the transformed image (for debugging)
-    transformed_image.show()
+
+    buffer = BytesIO()
+    transformed_image.save(buffer, format="PNG")
+    img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    transformed_image_data_url = f"data:image/png;base64,{img_str}"
+    buffer.close()
+
+    
     return templates.TemplateResponse(
         "image_transformation_output.html",
         {
             "request": request,
             "image_id": image_id,
+            "transformed_image_url": transformed_image_data_url,
         },
     )
