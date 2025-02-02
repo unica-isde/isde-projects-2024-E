@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
 from app.ml.classification_utils import classify_image
@@ -56,10 +57,19 @@ async def request_classification(request: Request):
         },
     )
 
-@app.get("/donwload-result")
+@app.get("/download-result")
 def donwload_result(request: Request):
-    pass
+    """Download the classification result as a JSON file."""
+    result_file_path = "app/static/result.json"
+    
+    classification_scores = request.query_params.get("scores")
 
-@app.get("/donwload-plot")
+    with open(result_file_path, "w") as json_file:
+        json_file.write(classification_scores)
+
+    return FileResponse(result_file_path, filename="result.json", media_type="application/json")
+
+
+@app.get("/download-plot")
 def download_plot(request: Request):
     pass
