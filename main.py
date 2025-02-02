@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
+from app.forms.upload_form import UploadForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
 
@@ -61,3 +62,26 @@ def create_upload_image(request: Request):
         "upload_image_select.html",
         {"request": request, "models": Configuration.models},
     )
+
+@app.post("/upload-image")
+async def request_upload_image(request: Request):
+    form = UploadForm(request)
+    await form.load_data()
+    model_id = form.model_id
+    image = form.image
+    image_id = str(image.filename)
+
+    if not form.is_valid():
+        print("".join(form.errors))
+        return templates.TemplateResponse(
+            "upload_image_select.html",
+            {"request": request, "models": Configuration.models},
+        )
+
+    # To test a valid image submission
+    print("valid")
+    return templates.TemplateResponse(
+        "upload_image_select.html",
+        {"request": request, "models": Configuration.models},
+    )
+
