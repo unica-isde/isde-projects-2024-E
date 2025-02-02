@@ -59,6 +59,7 @@ async def request_classification(request: Request):
 
 @app.get("/upload-image")
 def create_upload_image(request: Request):
+    """Display the form to upload an image."""
     return templates.TemplateResponse(
         "upload_image_select.html",
         {"request": request, "models": Configuration.models},
@@ -66,6 +67,7 @@ def create_upload_image(request: Request):
 
 @app.post("/upload-image")
 async def request_upload_image(request: Request):
+    """Upload an image, store it and classify it using the selected model."""
     form = UploadForm(request)
     await form.load_data()
     model_id = form.model_id
@@ -87,10 +89,9 @@ async def request_upload_image(request: Request):
             {"request": request, "models": Configuration.models},
         )
 
-    # To test a valid image submission
-    print("valid")
+    classification_scores = classify_image(model_id=model_id, img_id=image_id)
     return templates.TemplateResponse(
-        "upload_image_select.html",
-        {"request": request, "models": Configuration.models},
+        "classification_output.html",
+        {"request": request, "image_id": image_id, "classification_scores": json.dumps(classification_scores)},
     )
 
