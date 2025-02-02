@@ -57,5 +57,9 @@ async def request_classification(request: Request):
     )
 
 @app.get("/donwload-result")
-def create_classify(request: Request):
+def donwload_result(request: Request):
+    pass
+
+@app.get("/donwload-plot")
+def download_plot(request: Request):
     pass
