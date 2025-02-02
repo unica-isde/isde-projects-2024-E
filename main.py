@@ -55,3 +55,7 @@ async def request_classification(request: Request):
             "classification_scores": json.dumps(classification_scores),
         },
     )
+
+@app.get("/donwload-result")
+def create_classify(request: Request):
+    pass
