@@ -8,6 +8,7 @@ from app.forms.classification_form import ClassificationForm
 from app.forms.upload_form import UploadForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
+from app.utils import add_image_to_list
 
 
 app = FastAPI()
@@ -73,6 +74,14 @@ async def request_upload_image(request: Request):
 
     if not form.is_valid():
         print("".join(form.errors))
+        return templates.TemplateResponse(
+            "upload_image_select.html",
+            {"request": request, "models": Configuration.models},
+        )
+
+    retVal = await add_image_to_list(image, image_id)
+    if retVal == False:
+        print("Error in adding image")
         return templates.TemplateResponse(
             "upload_image_select.html",
             {"request": request, "models": Configuration.models},
