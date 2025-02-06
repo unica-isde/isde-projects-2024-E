@@ -1,8 +1,10 @@
 import json
+import matplotlib.pyplot as plt
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
 from app.ml.classification_utils import classify_image
@@ -55,3 +57,37 @@ async def request_classification(request: Request):
             "classification_scores": json.dumps(classification_scores),
         },
     )
+
+@app.get("/download-result")
+def donwload_result(request: Request):
+    """Download the classification result as a JSON file."""
+    result_file_path = "app/static/result.json"
+    
+    classification_scores = request.query_params.get("scores")
+
+    with open(result_file_path, "w") as json_file:
+        json_file.write(classification_scores)
+
+    return FileResponse(result_file_path, filename="result.json", media_type="application/json")
+
+
+@app.get("/download-plot")
+def download_plot(request: Request):
+    result_file_path = "app/static/plot.png"
+
+    classification_scores = json.loads(request.query_params.get("scores"))
+
+    top_5_scores = sorted(classification_scores, key=lambda x: x[1], reverse=True)[:5]
+    models = [score[0] for score in top_5_scores]
+    scores = [score[1] for score in top_5_scores]
+
+    plt.bar(models, scores, color="blue")
+    plt.xlabel("Model")
+    plt.ylabel("Score")
+    plt.title("Top 5 Classification Scores")
+    plt.xticks(rotation=45, ha='right')
+    plt.subplots_adjust(bottom=0.5) 
+    plt.savefig(result_file_path)
+    plt.close()
+
+    return FileResponse(result_file_path, filename="plot.png", media_type="image/png")

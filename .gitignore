@@ -163,3 +163,7 @@ cython_debug/
 
 # this should be downloaded during repo setup
 app/static/imagenet_subset
+
+# downloads issued by the download buttons
+app/static/plot.png
+app/static/result.json
