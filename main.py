@@ -1,4 +1,6 @@
 import json
+from io import BytesIO
+import base64
 import matplotlib.pyplot as plt
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -7,9 +9,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
+from app.forms.transformation_form import TransformationForm
 from app.forms.upload_form import UploadForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
+from app.ml.transformation_utils import transform_image
 from app.utils import add_image_to_list
 
 
@@ -59,6 +63,46 @@ async def request_classification(request: Request):
         },
     )
 
+@app.get("/image-transformation")
+def create_transform(request: Request):
+    return templates.TemplateResponse(
+        "image_transformation_select.html",
+        {"request": request, "images": list_images()},
+    )
+
+@app.post("/image-transformation")
+async def request_transformation(request: Request):
+    form = TransformationForm(request)
+    await form.load_data()
+    image_id = form.image_id
+    color = form.color
+    brightness = form.brightness
+    contrast = form.contrast
+    sharpness = form.sharpness
+    
+    transformed_image = transform_image(
+        image_id=image_id,
+        color=color,
+        brightness=brightness,
+        contrast=contrast,
+        sharpness=sharpness,
+    )
+
+    buffer = BytesIO()
+    transformed_image.save(buffer, format="PNG")
+    img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    transformed_image_data_url = f"data:image/png;base64,{img_str}"
+    buffer.close()
+
+    
+    return templates.TemplateResponse(
+        "image_transformation_output.html",
+        {
+            "request": request,
+            "image_id": image_id,
+            "transformed_image_url": transformed_image_data_url,
+        },
+    )
 @app.get("/upload-image")
 def create_upload_image(request: Request):
     """Display the form to upload an image."""
