@@ -6,13 +6,15 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi import Form
 from fastapi.responses import FileResponse
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
+from app.forms.histogram_form import HistogramForm
 from app.forms.transformation_form import TransformationForm
 from app.forms.upload_form import UploadForm
 from app.ml.classification_utils import classify_image
-from app.utils import list_images
+from app.utils import list_images,generate_histogram,get_image_path
 from app.ml.transformation_utils import transform_image
 from app.utils import add_image_to_list
 
@@ -22,6 +24,36 @@ config = Configuration()
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
+
+# Histogram Creation
+
+@app.get("/histogram", response_class=HTMLResponse)
+def create_histogram(request: Request):
+    """Displays the form for selecting an image."""
+    return templates.TemplateResponse(
+        "histogram_select.html",
+        {"request": request, "images": list_images()}
+    )
+
+
+@app.post("/histogram")
+async def request_histogram(request: Request):
+    """Processes the form submission and returns the histogram image."""
+    form = HistogramForm(request)
+    await form.load_data()
+
+    if not form.is_valid():
+        return templates.TemplateResponse("histogram_select.html", {"request": request, "errors": form.errors})
+
+    image_path = get_image_path(form.image_id)
+    histogram_data = generate_histogram(image_path)
+
+    return templates.TemplateResponse(
+        "histogram_output.html",
+        {"request": request, "image_id": form.image_id, "histogram_data": histogram_data}
+    )
+
 
 
 @app.get("/info")
