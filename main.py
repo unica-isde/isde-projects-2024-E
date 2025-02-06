@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Form
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
 from app.ml.classification_utils import classify_image
@@ -14,6 +15,22 @@ config = Configuration()
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
+
+# Histogram Creation
+
+@app.get("/histogram", response_class=HTMLResponse)
+def create_histogram(request: Request):
+    """Displays the form for selecting an image."""
+    return templates.TemplateResponse(
+        "histogram_select.html",
+        {"request": request, "images": list_images()}
+    )
+
+
+@app.post("/histogram")
+async def request_histogram(request: Request):
+    pass
 
 
 @app.get("/info")
