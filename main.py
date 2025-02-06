@@ -7,8 +7,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
+from app.forms.upload_form import UploadForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
+from app.utils import add_image_to_list
 
 
 app = FastAPI()
@@ -41,7 +43,6 @@ def create_classify(request: Request):
         {"request": request, "images": list_images(), "models": Configuration.models},
     )
 
-
 @app.post("/classifications")
 async def request_classification(request: Request):
     form = ClassificationForm(request)
@@ -57,6 +58,45 @@ async def request_classification(request: Request):
             "classification_scores": json.dumps(classification_scores),
         },
     )
+
+@app.get("/upload-image")
+def create_upload_image(request: Request):
+    """Display the form to upload an image."""
+    return templates.TemplateResponse(
+        "upload_image_select.html",
+        {"request": request, "models": Configuration.models},
+    )
+
+@app.post("/upload-image")
+async def request_upload_image(request: Request):
+    """Upload an image, store it and classify it using the selected model."""
+    form = UploadForm(request)
+    await form.load_data()
+    model_id = form.model_id
+    image = form.image
+    image_id = str(image.filename)
+
+    if not form.is_valid():
+        print("".join(form.errors))
+        return templates.TemplateResponse(
+            "upload_image_select.html",
+            {"request": request, "models": Configuration.models},
+        )
+
+    retVal = await add_image_to_list(image, image_id)
+    if retVal == False:
+        print("Error in adding image")
+        return templates.TemplateResponse(
+            "upload_image_select.html",
+            {"request": request, "models": Configuration.models},
+        )
+
+    classification_scores = classify_image(model_id=model_id, img_id=image_id)
+    return templates.TemplateResponse(
+        "classification_output.html",
+        {"request": request, "image_id": image_id, "classification_scores": json.dumps(classification_scores)},
+    )
+
 
 @app.get("/download-result")
 def donwload_result(request: Request):
