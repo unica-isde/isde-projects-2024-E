@@ -9,7 +9,6 @@ from app.forms.classification_form import ClassificationForm
 from app.forms.histogram_form import HistogramForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images,generate_histogram,get_image_path
-import matplotlib.pyplot as plt
 
 
 app = FastAPI()
@@ -42,7 +41,10 @@ async def request_histogram(request: Request):
     image_path = get_image_path(form.image_id)
     histogram_data = generate_histogram(image_path)
 
-    return
+    return templates.TemplateResponse(
+        "histogram_output.html",
+        {"request": request, "image_id": form.image_id, "histogram_data": histogram_data}
+    )
 
 
 

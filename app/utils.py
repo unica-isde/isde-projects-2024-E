@@ -42,7 +42,6 @@ def generate_histogram(image_path):
     # save histogram to buffer
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
-    plt.savefig('temporary_histogram.png', format='png')
     plt.close()
     buffer.seek(0)
 
