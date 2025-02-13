@@ -1,12 +1,13 @@
 import json
 from io import BytesIO
 import base64
+import os
 import matplotlib.pyplot as plt
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi import Form
+from fastapi import BackgroundTasks
 from fastapi.responses import FileResponse
 from app.config import Configuration
 from app.forms.classification_form import ClassificationForm
@@ -17,6 +18,7 @@ from app.ml.classification_utils import classify_image
 from app.utils import list_images,generate_histogram,get_image_path
 from app.ml.transformation_utils import transform_image
 from app.utils import add_image_to_list
+import tempfile
 
 
 app = FastAPI()
@@ -175,17 +177,23 @@ async def request_upload_image(request: Request):
 
 
 @app.get("/download-result")
-def donwload_result(request: Request):
-    """Download the classification result as a JSON file."""
-    result_file_path = "app/static/result.json"
+def download_result(request: Request, background_tasks: BackgroundTasks):
     
     classification_scores = request.query_params.get("scores")
+    classification_scores = json.loads(classification_scores)
 
-    with open(result_file_path, "w") as json_file:
-        json_file.write(classification_scores)
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".json") as temp_file:
+        temp_file_path = temp_file.name
+        json.dump(classification_scores, temp_file)
 
-    return FileResponse(result_file_path, filename="result.json", media_type="application/json")
+    background_tasks.add_task(os.remove, temp_file_path)
 
+    return FileResponse(
+        temp_file_path,
+        filename="classification_result.json",
+        media_type="application/json",
+        headers={"Content-Disposition": 'attachment; filename="classification_result.json"'}
+    )
 
 @app.get("/download-plot")
 def download_plot(request: Request):
