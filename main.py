@@ -35,7 +35,14 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/histogram", response_class=HTMLResponse)
 def create_histogram(request: Request):
-    """Displays the form for selecting an image."""
+    """Creates the page for the histogram form.
+
+    Args:
+        request (Request): request issued from base.html
+
+    Returns:
+        (TemplateResponse): TemplateResponse with histogram_select.html
+    """
     return templates.TemplateResponse(
         "histogram_select.html",
         {"request": request, "images": list_images()}
@@ -44,7 +51,14 @@ def create_histogram(request: Request):
 
 @app.post("/histogram")
 async def request_histogram(request: Request):
-    """Processes the form submission and returns the histogram image."""
+    """Processes the form submission and returns the histogram image.
+
+    Args:
+        request (Request): issued from histogram_select.html
+
+    Returns:
+        (Template_Response): TemplateResponse with histogram_output.html to display the histogram
+    """
     form = HistogramForm(request)
     await form.load_data()
     error = form.errors
@@ -104,6 +118,14 @@ async def request_classification(request: Request):
 
 @app.get("/image-transformation")
 def create_transform(request: Request):
+    """Creates the page for the image transformation form.
+
+    Args:
+        request (Request): issued from base.html to display the image transformation form
+
+    Returns:
+        (TemplateResponse): TemplateResponse with image_transformation_select.html
+    """
     return templates.TemplateResponse(
         "image_transformation_select.html",
         {"request": request, "images": list_images()},
@@ -111,6 +133,14 @@ def create_transform(request: Request):
 
 @app.post("/image-transformation")
 async def request_transformation(request: Request):
+    """Loads the form data, processes the image transformation and displays the transformed image.
+
+    Args:
+        request (Request): issued from image_transformation_select.html
+
+    Returns:
+        (TemplateResponse): TemplateResponse with image_transformation_output.html to display the transformed image
+    """
     form = TransformationForm(request)
     await form.load_data()
     image_id = form.image_id
@@ -151,7 +181,14 @@ async def request_transformation(request: Request):
 
 @app.get("/upload-image")
 def create_upload_image(request: Request):
-    """Display the form to upload an image."""
+    """Display the form to upload an image.
+
+    Args:
+        request (Request): issued from base.html
+
+    Returns:
+        (TemplateResponse): TemplateResponse with upload_image_select.html
+    """
     return templates.TemplateResponse(
         "upload_image_select.html",
         {"request": request, "models": Configuration.models},
@@ -159,7 +196,14 @@ def create_upload_image(request: Request):
 
 @app.post("/upload-image")
 async def request_upload_image(request: Request):
-    """Upload an image, store it and classify it using the selected model."""
+    """Upload an image, store it and classify it using the selected model.
+
+    Args:
+        request (Request): issued from upload_image_select.html
+
+    Returns:
+        (TemplateResponse): TemplateResponse with classification_output.html showing the classification results
+    """
     form = UploadForm(request)
     await form.load_data()
     model_id = form.model_id
@@ -189,6 +233,15 @@ async def request_upload_image(request: Request):
 
 @app.get("/download-result")
 def download_result(request: Request, background_tasks: BackgroundTasks):
+    """Download the classification result as a JSON file.
+
+    Args:
+        request (Request): issued from classification_output.html
+
+    Returns:
+        (FileResponse): FileResponse with the classification result as a JSON file
+    """
+    result_file_path = "app/static/result.json"
     
     classification_scores = request.query_params.get("scores")
     classification_scores = json.loads(classification_scores)
@@ -208,6 +261,15 @@ def download_result(request: Request, background_tasks: BackgroundTasks):
 
 @app.get("/download-plot")
 def download_plot(request: Request, background_tasks: BackgroundTasks):
+    """Download the classification scores as a bar plot.
+
+    Args:
+        request (Request): issued from classification_output.html
+
+    Returns:
+        (TemplateResponse): FileResponse with the classification scores as a bar plot as png-image
+    """
+    result_file_path = "app/static/plot.png"
 
     classification_scores = json.loads(request.query_params.get("scores"))
 
