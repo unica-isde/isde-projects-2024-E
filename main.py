@@ -219,7 +219,7 @@ def download_plot(request: Request, background_tasks: BackgroundTasks):
         plt.close()
 
     background_tasks.add_task(os.remove,result_file_path)
-    print(result_file_path)
+    
     return FileResponse(
         result_file_path,
         filename="classification_result.png",
