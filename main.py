@@ -237,6 +237,7 @@ def download_result(request: Request, background_tasks: BackgroundTasks):
 
     Args:
         request (Request): issued from classification_output.html
+        background_tasks (BackgroundTasks): handle to remove the temporary file after download
 
     Returns:
         (FileResponse): FileResponse with the classification result as a JSON file
@@ -265,6 +266,7 @@ def download_plot(request: Request, background_tasks: BackgroundTasks):
 
     Args:
         request (Request): issued from classification_output.html
+        background_tasks (BackgroundTasks): handle to remove the temporary file after download
 
     Returns:
         (TemplateResponse): FileResponse with the classification scores as a bar plot as png-image
