@@ -20,6 +20,9 @@ from app.ml.transformation_utils import transform_image
 from app.utils import add_image_to_list
 import tempfile
 
+import matplotlib
+matplotlib.use("agg")
+
 
 app = FastAPI()
 config = Configuration()
@@ -196,8 +199,7 @@ def download_result(request: Request, background_tasks: BackgroundTasks):
     )
 
 @app.get("/download-plot")
-def download_plot(request: Request):
-    result_file_path = "app/static/plot.png"
+def download_plot(request: Request, background_tasks: BackgroundTasks):
 
     classification_scores = json.loads(request.query_params.get("scores"))
 
@@ -205,13 +207,22 @@ def download_plot(request: Request):
     models = [score[0] for score in top_5_scores]
     scores = [score[1] for score in top_5_scores]
 
-    plt.bar(models, scores, color="blue")
-    plt.xlabel("Model")
-    plt.ylabel("Score")
-    plt.title("Top 5 Classification Scores")
-    plt.xticks(rotation=45, ha='right')
-    plt.subplots_adjust(bottom=0.5) 
-    plt.savefig(result_file_path)
-    plt.close()
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.png') as temp_file:
+        result_file_path = temp_file.name 
+        plt.bar(models, scores, color="blue")
+        plt.xlabel("Model")
+        plt.ylabel("Score")
+        plt.title("Top 5 Classification Scores")
+        plt.xticks(rotation=45, ha='right')
+        plt.subplots_adjust(bottom=0.5) 
+        plt.savefig(result_file_path)
+        plt.close()
 
-    return FileResponse(result_file_path, filename="plot.png", media_type="image/png")
+    background_tasks.add_task(os.remove,result_file_path)
+    print(result_file_path)
+    return FileResponse(
+        result_file_path,
+        filename="classification_result.png",
+        media_type="image/png",
+        headers={"Content-Disposition": 'attachment; filename="classification_result.png"'}
+    )
