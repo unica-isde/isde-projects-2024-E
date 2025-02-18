@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Select an Image to Generate Histogram</h2>
+
+<form action="/histogram" method="post">
+    
+    <select name="image_id" id="image_id">
+        {% for image in images %}
+        <option value="{{ image }}">{{ image }}</option>
+        {% endfor %}
+    </select>
+    </p>
+    <button type="submit" value="1" class="btn btn-dark mb-2">Submit</button>
+</form>
+
+{% endblock %}
